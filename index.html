@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons"
+    rel="stylesheet">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="wrapper-video" id="js-video-container">
+            <video id="video" class="js-video">
+                <source src="./video/big-buck-bunny.mp4" type="video/mp4"></source>
+            </video>
+            <div class="wrapper-controls">
+                <!-- <div class="video-progress-container">
+                    <input class="video-progress-bar range js-video-progress-bar" type="range" min="0" max="100" value="0" step="0.01" />
+                </div> -->
+                <div id="video-controls" class="video-controls">
+ 
+                    <button data-title="Play (k)" type="button" class="video-play js-video-play">
+                        <i class="far fa-pause-circle fa-play-circle"></i>
+                    </button>
+        
+                    <div class="video-volume-container">
+                        <button type="button" data-title="Mute (m)" class="video-volume js-video-volume">
+                            <i class="fad fa-volume-slash fa-volume-up"></i>
+                        </button>
+                        <input class="video-volume-bar js-video-volume-bar range" type="range" min="0" max="1" value="1" step="0.01" />
+                    </div>
+
+                    <div class="video-time js-video-time">
+                        <span class="video-time-elapsed js-video-time-elapsed">0:00</span>
+                        <span class="video-divider">/</span>
+                        <span class="video-duration js-video-duration">0:00</span>
+                    </div>
+
+                    <button type="button" data-title="Picture in picture (i)" class="video-mini js-video-mini">
+                        <i class="material-icons">
+                            picture_in_picture_alt
+                         </i>
+                    </button>
+
+                    <button type="button" data-title="Fullscreen (f)" class="video-fullscreen js-video-fullscreen">
+                        <i class="material-icons">
+                            fullscreen
+                        </i>
+                        <!-- fullscreen_exit -->
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- <iframe src="./video/big-buck-bunny.mp4" allow="autoplay; fullscreen"> </iframe> -->
+        </div>
+    </div>
+    
+    <!-- <script type="module">
+        import videoPlayer  from './js/video-player.js'
+    </script> -->
+        <script type="text/javascript" src="./js/video-player.js"></script>
+        <script type="text/javascript">
+            const $ = document.querySelector.bind(document);
+            let video = $("#video");
+            let jsVideo = $(".js-video");
+            let jsVideoPlay = $(".js-video-play");
+            let jsVideoVolume = $(".js-video-volume");
+            let jsVideoVolumeBar = $(".js-video-volume-bar");
+            let jsVideoTimeElapsed = $(".js-video-time-elapsed");
+            let jsVideoProgressBar = $(".js-video-progress-bar");
+            let jsVideoDuration = $(".js-video-duration");
+            let jsVideoFullScreen = $(".js-video-fullscreen");
+            let jsVideoMini = $(".js-video-mini");
+            let jsVideoContainer = $("#js-video-container");
+            let currentVolumeValue = jsVideoVolumeBar.value || 1;
+
+            // Handle Play Video
+            jsVideoPlay.addEventListener("click", function(){
+                videoPlayer.togglePlay(video);
+            })
+
+            // Handle Video Event 
+            jsVideo.addEventListener("click", function(){
+                videoPlayer.togglePlay(video);
+            })
+
+            jsVideo.addEventListener("play", function(){
+                jsVideoPlay.firstElementChild.classList.toggle("fa-play-circle");
+                jsVideoPlay.dataset.title = "Pause (k)"
+            })
+            jsVideo.addEventListener("pause", function(){
+                jsVideoPlay.firstElementChild.classList.toggle("fa-play-circle");
+                jsVideoPlay.dataset.title = "Play (k)"
+            })
+
+            jsVideo.addEventListener("ended", function(){
+                // videoPlayer.play(video);
+                videoPlayer.pause(video);
+            })
+
+            jsVideo.addEventListener("loadedmetadata", function(){
+                const time = formatTime(video.duration);
+                jsVideoDuration.innerHTML = changeDisplayTime(time);
+            })
+
+            jsVideo.addEventListener("timeupdate", function(){
+                let currentTime = video.currentTime;
+                let duration = video.duration;
+
+                let time = formatTime(currentTime);
+                let valuePercent = calculatePercentForProgressBar(currentTime, duration);
+                updateValueInputProgressBar(valuePercent);
+
+                jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
+            })
+
+
+            // Handle Progress Bar
+            jsVideoProgressBar.addEventListener("change", function(){
+
+                let duration = video.duration;
+                let valueInputProgressBar = jsVideoProgressBar.value || 0;
+
+                let timeSeconds = convertDurationToTimeSeconds(duration, valueInputProgressBar);
+                let valuePercent = calculatePercentForProgressBar(timeSeconds, duration);
+                updateValueInputProgressBar(valuePercent);
+                let time = formatTime(timeSeconds);
+                
+                video.currentTime = timeSeconds;
+
+                jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
+            })
+            jsVideoProgressBar.addEventListener("input", function(){
+
+                let duration = video.duration;
+                let valueInputProgressBar = jsVideoProgressBar.value || 0;
+
+                let timeSeconds = convertDurationToTimeSeconds(duration, valueInputProgressBar);
+                let valuePercent = calculatePercentForProgressBar(timeSeconds, duration);
+                updateValueInputProgressBar(valuePercent);
+                let time = formatTime(timeSeconds);
+                
+                video.currentTime = timeSeconds;
+
+                jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
+            })
+
+            function updateValueInputProgressBar(valuePercent){
+                jsVideoProgressBar.value = valuePercent;
+                jsVideoProgressBar.style.background = 'linear-gradient(to right, #FF6B00 ' + valuePercent + '%, #FF6B00 ' + valuePercent + '%, #E0E0E0 ' + valuePercent + '%, #E0E0E0 100%)';
+            }
+            function formatTime(timeSeconds){
+                let result = new Date ( timeSeconds * 1000 ).toISOString().substr(11, 8);
+                return {
+                    hours: result.substr(0, 2),
+                    minutes: result.substr(3, 2),
+                    seconds: result.substr(6, 2)
+                }
+            }
+
+            function changeDisplayTime(time) {
+                if(time.hours.charAt(0) == 0 && time.hours.charAt(1) == 0){
+                    if(time.minutes.charAt(0) == 0 && time.minutes.charAt(1) != 0){
+                        return `${time.minutes.charAt(1)}:${time.seconds}`;
+                    }
+                    if(time.minutes.charAt(0) == 0 && time.minutes.charAt(1) == 0){
+                        return `${time.minutes.charAt(1)}:${time.seconds}`;
+                    }
+                    return `${time.minutes}:${time.seconds}`;
+                }
+                if(time.hours.charAt(0) == 0 && time.hours.charAt(1) != 0){
+                    return `${time.hours.charAt(1)}:${time.minutes}:${time.seconds}`;
+                }
+                return `${time.hours}:${time.minutes}:${time.seconds}`;
+            }
+            function convertDurationToTimeSeconds(duration, valueProgressBar) {
+                let timeSeconds = (duration / 100) * valueProgressBar;
+                return timeSeconds;
+            }
+
+            function calculatePercentForProgressBar(timeSeconds, duration){
+                let valuePercent = isNaN(Math.floor( (timeSeconds / duration) * 100)) ? 0 : Math.floor( (timeSeconds / duration) * 100);
+                return valuePercent;
+            }
+            // function updateTimeElapsed(){
+
+            // }
+
+            // Handle Volume
+            function toggleVolume(selectorVideo, classIcon = 'fa-volume-up'){
+                if(video.muted){
+                    videoPlayer.unMute(selectorVideo);
+                    currentVolumeValue = currentVolumeValue == 0 ? 1 : currentVolumeValue;
+                    videoPlayer.updateVolumeValue(video, currentVolumeValue);
+                    updateVolumeForElementInput(currentVolumeValue);
+                    jsVideoVolume.dataset.title = "Mute (m)";
+                }else{
+                    videoPlayer.mute(selectorVideo);
+                    videoPlayer.updateVolumeValue(video, 0);
+                    updateVolumeForElementInput(0);
+                    jsVideoVolume.dataset.title = "Unmute (m)";
+                }
+                jsVideoVolume.firstElementChild.classList.toggle(classIcon);
+            }
+            function removeIconUnMute(){
+                jsVideoVolume.firstElementChild.classList.remove('fa-volume-up'); 
+            }
+            function addIconUnMute(){
+                jsVideoVolume.firstElementChild.classList.add('fa-volume-up'); 
+            }
+            function updateVolumeForElementInput(volumeValue){
+                jsVideoVolumeBar.value = volumeValue;
+                let valuePercent = (volumeValue * 100);
+                jsVideoVolumeBar.style.background = 'linear-gradient(to right, #FF6B00 ' + valuePercent + '%, #FF6B00 ' + valuePercent + '%, #E0E0E0 ' + valuePercent + '%, #E0E0E0 100%)';
+            }
+
+            jsVideoVolume.addEventListener("click", function(){
+                toggleVolume(video);
+            })
+
+            jsVideoVolumeBar.addEventListener("input", function(){
+                let volumeValue =  jsVideoVolumeBar.value || 1;
+                // keep again volume value when user update
+                currentVolumeValue = volumeValue;
+                updateVolumeForElementInput(volumeValue);
+                videoPlayer.updateVolumeValue(video, volumeValue);
+
+                if(currentVolumeValue == 0){
+                    removeIconUnMute();
+                    videoPlayer.mute(video);
+                    jsVideoVolume.dataset.title = "Unmute (m)";
+                }else if(currentVolumeValue >= 0.1){
+                    addIconUnMute();
+                    videoPlayer.unMute(video);
+                    jsVideoVolume.dataset.title = "Mute (m)";
+                }
+            })
+
+           // Handle Fullscreen
+            function toggleFullScreen(){
+                if (document.fullscreenElement) {
+                    jsVideoFullScreen.firstElementChild.textContent = "fullscreen";
+                    jsVideoFullScreen.dataset.title = "Fullscreen (f)"
+                    document.exitFullscreen();
+                } else if (document.webkitFullscreenElement) {
+                    // Need this to support Safari
+                    jsVideoFullScreen.firstElementChild.textContent = "fullscreen";
+                    jsVideoFullScreen.dataset.title = "Fullscreen (f)"
+                    document.webkitExitFullscreen();
+                } else if (jsVideoContainer.webkitRequestFullscreen) {
+                    // Need this to support Safari
+                    jsVideoFullScreen.firstElementChild.textContent = "fullscreen_exit";
+                    jsVideoFullScreen.dataset.title = "Fullscreen exit (f)"
+                    jsVideoContainer.webkitRequestFullscreen();
+                } else {
+                    jsVideoFullScreen.firstElementChild.textContent = "fullscreen_exit";
+                    jsVideoFullScreen.dataset.title = "Fullscreen exit (f)"
+                    jsVideoContainer.requestFullscreen();
+                }
+            }
+
+            jsVideoFullScreen.addEventListener("click", toggleFullScreen);
+
+            // videoContainer.addEventListener('fullscreenchange', function(){
+            // });
+            async function togglePIP(){
+                try {
+                    if (video !== document.pictureInPictureElement) {
+                      jsVideoMini.disabled = true;
+                      jsVideoMini.dataset.title = "No picture in picture (i)"
+                      await video.requestPictureInPicture();
+                    } else {
+                      jsVideoMini.dataset.title = "Picture in picture (i)"
+                      await document.exitPictureInPicture();
+                    }
+                } catch (error) {
+                    console.error(error)
+                } finally {
+                    jsVideoMini.disabled = false;
+                }
+            }
+            jsVideoMini.addEventListener('click', togglePIP)
+
+
+            document.addEventListener("keydown", function(e){
+                console.log("Key Code",e.keyCode);
+                switch(e.keyCode){
+                    case 32:  // space
+                        videoPlayer.togglePlay(video);
+                        break;
+                    case 75:  // k
+                        videoPlayer.togglePlay(video);
+                        break;
+                    case 77:  // m
+                       toggleVolume(video);
+                       break;    
+                    case 70:  // f
+                       toggleFullScreen();
+                       break;    
+                    case 73: // i
+                       togglePIP();
+                       break;
+                }
+            })
+        </script>
+</body>
+</html>
