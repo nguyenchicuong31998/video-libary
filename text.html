@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons"
+    rel="stylesheet">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="wrapper-video" id="js-video-container">
+            <video id="video" class="js-video">
+                <source src="./video/big-buck-bunny.mp4" type="video/mp4"></source>
+            </video>
+            <div class="wrapper-controls">
+                <div class="video-progress-container">
+                    <progress style="width: 100%" class="js-progress-bar" id="progress-bar" value="0" min="0"></progress>
+                    <!-- max="100" -->
+                    <input class="video-progress-bar range js-video-progress-bar" type="range" min="0"  value="0" step="0.1" />
+                    <div class="seek-tooltip" id="seek-tooltip">00:00</div>
+                </div>
+                <div id="video-controls" class="video-controls">
+ 
+                    <button data-title="Play (k)" type="button" class="video-play js-video-play">
+                        <i class="far fa-pause-circle fa-play-circle"></i>
+                    </button>
+
+                    <div class="video-time js-video-time">
+                        <span class="video-time-elapsed js-video-time-elapsed">0:00</span>
+                        <span class="video-divider">/</span>
+                        <span class="video-duration js-video-duration">0:00</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- <iframe src="./video/big-buck-bunny.mp4" allow="autoplay; fullscreen"> </iframe> -->
+        </div>
+    </div>
+    
+    <!-- <script type="module">
+        import videoPlayer  from './js/video-player.js'
+    </script> -->
+        <script type="text/javascript" src="./js/video-player.js"></script>
+        <script type="text/javascript">
+            const $ = document.querySelector.bind(document);
+            let video = $("#video");
+            let jsVideo = $(".js-video");
+            let jsVideoPlay = $(".js-video-play");
+            let jsVideoTimeElapsed = $(".js-video-time-elapsed");
+            let jsVideoProgressBar = $(".js-video-progress-bar");
+            let jsProgressBar = $(".js-progress-bar");
+            let jsVideoDuration = $(".js-video-duration");
+            let jsSeekTool = $(".seek-tooltip");
+            video.volume = 0.1;
+
+            // Handle Play Video
+            jsVideoPlay.addEventListener("click", function(){
+                videoPlayer.togglePlay(video);
+            })
+            // Handle Video Event 
+            jsVideo.addEventListener("click", function(){
+                videoPlayer.togglePlay(video);
+            })
+            jsVideo.addEventListener("play", function(){
+                jsVideoPlay.firstElementChild.classList.toggle("fa-play-circle");
+                jsVideoPlay.dataset.title = "Pause (k)"
+            })
+            jsVideo.addEventListener("pause", function(){
+                jsVideoPlay.firstElementChild.classList.toggle("fa-play-circle");
+                jsVideoPlay.dataset.title = "Play (k)"
+            })
+            jsVideo.addEventListener("ended", function(){
+                // videoPlayer.play(video);
+                videoPlayer.pause(video);
+            })
+
+
+
+
+            
+            jsVideo.addEventListener("loadedmetadata", function(){
+                const time = formatTime(video.duration);
+                jsVideoDuration.innerHTML = changeDisplayTime(time);
+             
+                jsVideoProgressBar.setAttribute("max", video.duration);
+                jsProgressBar.setAttribute("max", video.duration);
+                console.log(video.seekable.end(0));
+                console.log(video.duration);
+            })
+
+            jsVideo.addEventListener("timeupdate", updateTimeElapsed)
+            function updateTimeElapsed(){
+                let currentTime = video.currentTime;
+                let duration = video.duration;
+                let time = formatTime(currentTime);
+
+                // let valuePercent = calculatePercentForProgressBar(currentTime, duration);
+                // updateProgressBarValue(valuePercent);
+
+                jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
+            }
+            jsVideo.addEventListener("timeupdate", updateProgress)
+            function updateProgress(){
+                let videoDuration = video.duration;
+                let currentTime = video.currentTime;
+                let valuePercent = calculatePercentForProgressBar(currentTime, videoDuration)
+
+    
+                jsVideoProgressBar.value = currentTime;
+                jsProgressBar.value = currentTime;
+                updateProgressBarValue(valuePercent);
+
+                let time = formatTime(currentTime);
+                jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
+            }
+
+            jsVideoProgressBar.addEventListener("mousemove", function(e){
+         
+                let skipTooltip = Math.round((e.offsetX / e.target.clientWidth) * parseInt(e.target.getAttribute('max'), 10));
+                jsVideoProgressBar.setAttribute('data-seek', skipTooltip)
+                const time = formatTime(skipTooltip);
+                jsSeekTool.textContent = changeDisplayTime(time);
+                const rect = video.getBoundingClientRect();
+                jsSeekTool.style.cssText = "position:absolute;top: 10px; background:red; color:white;";
+                jsSeekTool.style.left = `${e.pageX - rect.left}px`;
+            })
+            jsVideoProgressBar.addEventListener("mouseleave", function(e){
+                jsSeekTool.style.cssText = "position:absolute;top: 10px; background:unset; color:unset;";
+            });
+
+            // Handle Progress Bar
+            jsVideoProgressBar.addEventListener("change", function(){
+
+                let duration = video.duration;
+                let valueInputProgressBar = jsVideoProgressBar.value || 0;
+
+                let timeSeconds = convertDurationToTimeSeconds(duration, valueInputProgressBar);
+                let valuePercent = calculatePercentForProgressBar(timeSeconds, duration);
+                updateProgressBarValue(valuePercent);
+                let time = formatTime(timeSeconds);
+
+                video.currentTime = timeSeconds;
+
+                jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
+            })
+
+            jsVideoProgressBar.addEventListener("input", function(){
+
+                let duration = video.duration;
+                let valueInputProgressBar = jsVideoProgressBar.value || 0;
+
+                let timeSeconds = convertDurationToTimeSeconds(duration, valueInputProgressBar);
+                let valuePercent = calculatePercentForProgressBar(timeSeconds, duration);
+                updateProgressBarValue(valuePercent);
+                let time = formatTime(timeSeconds);
+                
+                video.currentTime = timeSeconds;
+
+                jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
+            })
+
+            function updateProgressBarValue(valuePercent){
+                jsVideoProgressBar.style.background = 'linear-gradient(to right, #FF6B00 ' + valuePercent + '%, #FF6B00 ' + valuePercent + '%, #E0E0E0 ' + valuePercent + '%, #E0E0E0 100%)';
+            }
+            function formatTime(timeSeconds){
+                let result = new Date ( timeSeconds * 1000 ).toISOString().substr(11, 8);
+                return {
+                    hours: result.substr(0, 2),
+                    minutes: result.substr(3, 2),
+                    seconds: result.substr(6, 2)
+                }
+            }
+
+            function changeDisplayTime(time) {
+                if(time.hours.charAt(0) == 0 && time.hours.charAt(1) == 0){
+                    if(time.minutes.charAt(0) == 0 && time.minutes.charAt(1) != 0){
+                        return `${time.minutes.charAt(1)}:${time.seconds}`;
+                    }
+                    if(time.minutes.charAt(0) == 0 && time.minutes.charAt(1) == 0){
+                        return `${time.minutes.charAt(1)}:${time.seconds}`;
+                    }
+                    return `${time.minutes}:${time.seconds}`;
+                }
+                if(time.hours.charAt(0) == 0 && time.hours.charAt(1) != 0){
+                    return `${time.hours.charAt(1)}:${time.minutes}:${time.seconds}`;
+                }
+                return `${time.hours}:${time.minutes}:${time.seconds}`;
+            }
+            function convertDurationToTimeSeconds(duration, valueProgressBar) {
+                let timeSeconds = (duration / 100) * valueProgressBar;
+                return timeSeconds;
+            }
+
+            function calculatePercentForProgressBar(timeSeconds, duration){
+                let valuePercent = isNaN((timeSeconds / duration) * 100) ? 0 : (timeSeconds / duration) * 100;
+                return valuePercent;
+            }
+
+
+        </script>
+</body>
+</html>

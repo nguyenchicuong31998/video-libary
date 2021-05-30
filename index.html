@@ -5,8 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Library</title>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Icons"
-    rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet"/>
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
     <link rel="stylesheet" href="./css/style.css" />
 </head>
@@ -17,9 +16,9 @@
                 <source src="./video/big-buck-bunny.mp4" type="video/mp4"></source>
             </video>
             <div class="wrapper-controls">
-                <!-- <div class="video-progress-container">
-                    <input class="video-progress-bar range js-video-progress-bar" type="range" min="0" max="100" value="0" step="0.01" />
-                </div> -->
+                <div class="video-progress-container">
+                    <input class="video-progress-bar range js-video-progress-bar" type="range" min="0" max="100" value="0" step="0.1" />
+                </div>
                 <div id="video-controls" class="video-controls">
  
                     <button data-title="Play (k)" type="button" class="video-play js-video-play">
@@ -105,16 +104,19 @@
             jsVideo.addEventListener("loadedmetadata", function(){
                 const time = formatTime(video.duration);
                 jsVideoDuration.innerHTML = changeDisplayTime(time);
+             
+                console.log(video.seekable.end(0));
+                console.log(video.duration);
             })
 
             jsVideo.addEventListener("timeupdate", function(){
                 let currentTime = video.currentTime;
                 let duration = video.duration;
-
+                console.log((currentTime / duration) * 100);
                 let time = formatTime(currentTime);
+                
                 let valuePercent = calculatePercentForProgressBar(currentTime, duration);
-                updateValueInputProgressBar(valuePercent);
-
+                updateProgressBarValue(valuePercent);
                 jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
             })
 
@@ -123,11 +125,11 @@
             jsVideoProgressBar.addEventListener("change", function(){
 
                 let duration = video.duration;
-                let valueInputProgressBar = jsVideoProgressBar.value || 0;
+                let progressBarValue = jsVideoProgressBar.value || 0;
 
-                let timeSeconds = convertDurationToTimeSeconds(duration, valueInputProgressBar);
+                let timeSeconds = convertDurationToTimeSeconds(duration, progressBarValue);
                 let valuePercent = calculatePercentForProgressBar(timeSeconds, duration);
-                updateValueInputProgressBar(valuePercent);
+                updateProgressBarValue(valuePercent);
                 let time = formatTime(timeSeconds);
                 
                 video.currentTime = timeSeconds;
@@ -137,11 +139,11 @@
             jsVideoProgressBar.addEventListener("input", function(){
 
                 let duration = video.duration;
-                let valueInputProgressBar = jsVideoProgressBar.value || 0;
+                let progressBarValue = jsVideoProgressBar.value || 0;
 
-                let timeSeconds = convertDurationToTimeSeconds(duration, valueInputProgressBar);
+                let timeSeconds = convertDurationToTimeSeconds(duration, progressBarValue);
                 let valuePercent = calculatePercentForProgressBar(timeSeconds, duration);
-                updateValueInputProgressBar(valuePercent);
+                updateProgressBarValue(valuePercent);
                 let time = formatTime(timeSeconds);
                 
                 video.currentTime = timeSeconds;
@@ -149,7 +151,7 @@
                 jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
             })
 
-            function updateValueInputProgressBar(valuePercent){
+            function updateProgressBarValue(valuePercent){
                 jsVideoProgressBar.value = valuePercent;
                 jsVideoProgressBar.style.background = 'linear-gradient(to right, #FF6B00 ' + valuePercent + '%, #FF6B00 ' + valuePercent + '%, #E0E0E0 ' + valuePercent + '%, #E0E0E0 100%)';
             }
@@ -177,13 +179,14 @@
                 }
                 return `${time.hours}:${time.minutes}:${time.seconds}`;
             }
-            function convertDurationToTimeSeconds(duration, valueProgressBar) {
-                let timeSeconds = (duration / 100) * valueProgressBar;
+
+            function convertDurationToTimeSeconds(duration, progressBarValue) {
+                let timeSeconds = (duration / 100) * progressBarValue;
                 return timeSeconds;
             }
 
             function calculatePercentForProgressBar(timeSeconds, duration){
-                let valuePercent = isNaN(Math.floor( (timeSeconds / duration) * 100)) ? 0 : Math.floor( (timeSeconds / duration) * 100);
+                let valuePercent = isNaN((timeSeconds / duration) * 100) ? 0 : (timeSeconds / duration) * 100;
                 return valuePercent;
             }
             // function updateTimeElapsed(){
