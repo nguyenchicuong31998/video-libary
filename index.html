@@ -38,6 +38,56 @@
                         <span class="video-duration js-video-duration">0:00</span>
                     </div>
 
+                    <button type="button" class="video-settings js-video-settings" data-title="Settings (v)">
+                        <i class="material-icons js-icon-settings">
+                            settings
+                        </i>
+                        <ul class="video-menu js-video-menu">
+                            <li name="play-back-rate" class="video-menu-item js-video-menu-item">
+                                <span class="text-left">Tốc độ phát</span>
+                                <span>
+                                    <span class="js-playback-rate-value">Chuẩn</span>
+                                    <span class="icon-arrow-right"> > </span>
+                                </span>
+                            
+                            </li>
+                            <li class="video-menu-item  js-video-menu-item">
+                                <span class="text-left">Chất lượng</span>
+                                <span class="text-right">Tự động 720p
+                                    <span class="icon-arrow-right"> > </span>
+                                </span>
+                            </li>
+                        </ul>
+                    </button>
+
+                    <ul class="video-menu-rate js-video-menu-rate">
+                        <li data-value="0.25" class="video-menu-item-rate  js-video-menu-item-rate">
+                            0.25
+                        </li>
+                        <li data-value="0.5" class="video-menu-item-rate  js-video-menu-item-rate">
+                            0.5
+                        </li>
+                        <li data-value="0.75" class="video-menu-item-rate js-video-menu-item-rate">
+                            0.75
+                        </li>
+                        <li data-value="1" class="video-menu-item-rate active js-video-menu-item-rate">
+                            Chuẩn
+                        </li>
+                        <li data-value="1.25" class="video-menu-item-rate js-video-menu-item-rate">
+                            1.25
+                        </li>
+                        <li data-value="1.5" class="video-menu-item-rate  js-video-menu-item-rate">
+                            1.5
+                        </li>
+                        <li data-value="1.75" class="video-menu-item-rate js-video-menu-item-rate">
+                            1.75
+                        </li>
+                        <li data-value="2" class="video-menu-item-rate  js-video-menu-item-rate">
+                            2
+                        </li>
+                    </ul>
+
+         
                     <button type="button" data-title="Picture in picture (i)" class="video-mini js-video-mini">
                         <i class="material-icons">
                             picture_in_picture_alt
@@ -64,6 +114,7 @@
         <script type="text/javascript" src="./js/video-player.js"></script>
         <script type="text/javascript">
             const $ = document.querySelector.bind(document);
+            const $$ = document.querySelectorAll.bind(document);
             let video = $("#video");
             let jsVideo = $(".js-video");
             let jsVideoPlay = $(".js-video-play");
@@ -72,11 +123,18 @@
             let jsVideoTimeElapsed = $(".js-video-time-elapsed");
             let jsVideoProgressBar = $(".js-video-progress-bar");
             let jsVideoDuration = $(".js-video-duration");
+            let jsVideoSettings = $(".js-video-settings");
+            let jsVideoMenu = $(".js-video-menu");
+            let jsVideoMenuItem = $$(".js-video-menu-item");
+            let jsVideoMenuRate = $(".js-video-menu-rate");
+            let jsVideoMenuItemRate = $$(".js-video-menu-item-rate");
             let jsVideoFullScreen = $(".js-video-fullscreen");
             let jsVideoMini = $(".js-video-mini");
             let jsVideoContainer = $("#js-video-container");
+            let jsPlaybackRateValue = $(".js-playback-rate-value");
             let currentVolumeValue = jsVideoVolumeBar.value || 1;
-
+            let currentPlaybackRate = 1;
+            jsPlaybackRateValue.textContent = currentPlaybackRate != 1 ? currentPlaybackRate: "Chuẩn";
             // Handle Play Video
             jsVideoPlay.addEventListener("click", function(){
                 videoPlayer.togglePlay(video);
@@ -112,7 +170,7 @@
             jsVideo.addEventListener("timeupdate", function(){
                 let currentTime = video.currentTime;
                 let duration = video.duration;
-                console.log((currentTime / duration) * 100);
+                console.log(((currentTime / duration) * 100).toFixed(5));
                 let time = formatTime(currentTime);
                 
                 let valuePercent = calculatePercentForProgressBar(currentTime, duration);
@@ -136,6 +194,7 @@
 
                 jsVideoTimeElapsed.innerHTML = changeDisplayTime(time);
             })
+            
             jsVideoProgressBar.addEventListener("input", function(){
 
                 let duration = video.duration;
@@ -186,11 +245,10 @@
             }
 
             function calculatePercentForProgressBar(timeSeconds, duration){
-                let valuePercent = isNaN((timeSeconds / duration) * 100) ? 0 : (timeSeconds / duration) * 100;
+                let valuePercent = isNaN(((timeSeconds / duration) * 100).toFixed(5)) ? 0 : ((timeSeconds / duration) * 100).toFixed(5);
                 return valuePercent;
             }
             // function updateTimeElapsed(){
-
             // }
 
             // Handle Volume
@@ -288,6 +346,52 @@
             }
             jsVideoMini.addEventListener('click', togglePIP)
 
+
+            jsVideoSettings.addEventListener('click', function(){
+                if(jsVideoMenuRate.classList.contains("d-show")){
+                    jsVideoMenu.classList.remove('d-show');
+                }else{
+                    jsVideoMenu.classList.toggle('d-show');
+                }
+
+            });
+
+   
+            for(let i=0; i< jsVideoMenuItem.length; i++){
+                jsVideoMenuItem[i].addEventListener('click', function(e){
+                    switch(jsVideoMenuItem[i].getAttribute('name')){
+                        case "play-back-rate": 
+                            jsVideoMenuRate.classList.toggle('d-show');
+                            break
+                    }
+                    
+                })
+            }
+            for(let i =0; i< jsVideoMenuItemRate.length ; i++){
+            
+                console.log("vao ek");
+                jsVideoMenuItemRate[i].addEventListener('click', function(e){
+                    for(let j = 0; j < jsVideoMenuItemRate.length ; j++){
+                        jsVideoMenuItemRate[j].classList.remove("active");
+                    }
+                    currentPlaybackRate = Number(jsVideoMenuItemRate[i].dataset.value);
+                    video.playbackRate = currentPlaybackRate;
+                    jsVideoMenuItemRate[i].classList.add("active");
+                    jsVideoMenuRate.classList.remove('d-show');
+                    jsPlaybackRateValue.textContent = currentPlaybackRate != 1 ? currentPlaybackRate: "Chuẩn";
+                    jsVideoMenu.classList.add('d-show');
+                })
+            }
+            
+
+            window.onclick = function(e){
+                if(!event.target.closest(".js-video-menu-rate")  && !event.target.closest(".material-icons.js-icon-settings")){
+                    jsVideoMenu.classList.remove('d-show');
+                }
+                if(!event.target.closest(".js-video-menu") && !event.target.closest(".js-video-menu-rate")){
+                    jsVideoMenuRate.classList.remove('d-show');
+                }
+            }
 
             document.addEventListener("keydown", function(e){
                 console.log("Key Code",e.keyCode);

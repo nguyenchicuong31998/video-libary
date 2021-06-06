@@ -101,6 +101,7 @@ html,body{
 
 .container{
     margin: 10px auto;
+    user-select: none;
 }
 
 .wrapper-video{
@@ -141,7 +142,8 @@ button.video-active {
     .video-shuffle,
     .video-fullscreen,
     .video-mini,
-    .video-repeat {
+    .video-repeat,
+    .video-settings {
         background-color: transparent;
         outline: none;
         border: none;
@@ -159,8 +161,7 @@ button.video-active {
     .video-prev,
     .video-shuffle,
     .video-repeat,
-    .video-song,
-    .video-progress-container {
+    .video-song {
         margin: 0px 10px;
     }
 
@@ -168,8 +169,12 @@ button.video-active {
         margin-right: 5px;
     }
 
-    .video-mini{
+    .video-settings{
         margin-left: auto;
+        margin-right: 10px;
+        position: relative;
+    }
+    .video-mini{
         margin-right: 10px;
     }
 
@@ -336,4 +341,83 @@ button:hover::before {
     content: attr(data-title);
     right: 0;
     left: unset;
+}
+
+
+
+.video-menu{
+    list-style: none;
+    position: absolute;
+    right: -75px;
+    bottom: calc(100% + 30px);
+    background-color: rgb(0, 0, 0, 0.9);
+    width: 250px;
+    padding: 5px 0px;
+    display: none;
+    box-sizing: border-box;
+    /* display: block; */
+    transition: all .2s linear;
+}
+.video-menu .video-menu-item{
+    padding: 10px 25px;
+    display: flex;
+    font-size: 14px;
+    justify-content: space-between;
+    color: rgb(240, 233, 233);
+}
+
+.video-menu .video-menu-item:hover{
+    background-color: rgba(255,255,255, 0.4);
+}
+.icon-arrow-right{
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
+
+.video-menu-rate{
+    list-style: none;
+    position: absolute;
+    right: 10px;
+    bottom: calc(80%);
+    background-color: rgb(0, 0, 0, 0.9);
+    width: 250px;
+    padding: 5px 0px;
+    height: 200px;
+    overflow-y: scroll;
+    display: none;
+    box-sizing: border-box;
+    transition: all .2s linear;
+    border-radius: 6px;
+}
+.video-menu-rate::-webkit-scrollbar{
+    width: 5px;
+    height: 5px;
+}
+.video-menu-rate::-webkit-scrollbar-thumb{
+    background-color: white;
+}
+.video-menu-item-rate{
+    padding: 10px 25px;
+    display: flex;
+    font-size: 14px;
+    justify-content: space-between;
+    color: rgb(240, 233, 233);
+}
+.video-menu-item-rate.active{
+    background-color:rgba(255, 107, 0, .9);
+}
+
+.video-menu-rate .video-menu-item-rate:hover{
+    background-color: rgba(255,255,255, 0.4);
+    cursor: pointer;
+}
+
+
+
+.video-menu.d-show,
+.video-menu-rate.d-show{
+    display: block;
 }
