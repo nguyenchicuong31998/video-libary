@@ -110,6 +110,7 @@ html,body{
     margin: 0 auto;
     text-align: center;
     position: relative;
+    transition: visibility .2s linear;
 }
 .wrapper-controls{
     width: 100%;

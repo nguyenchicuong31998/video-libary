@@ -134,6 +134,7 @@
             let jsPlaybackRateValue = $(".js-playback-rate-value");
             let currentVolumeValue = jsVideoVolumeBar.value || 1;
             let currentPlaybackRate = 1;
+            let uiTimeout = null;
             jsPlaybackRateValue.textContent = currentPlaybackRate != 1 ? currentPlaybackRate: "Chuẩn";
             // Handle Play Video
             jsVideoPlay.addEventListener("click", function(){
@@ -143,6 +144,25 @@
             // Handle Video Event 
             jsVideo.addEventListener("click", function(){
                 videoPlayer.togglePlay(video);
+            })
+
+            jsVideo.addEventListener("mouseout", function(){
+                if(uiTimeout){
+                    clearTimeout(uiTimeout);
+                }
+                if(video.paused){
+                    return;
+                }
+                uiTimeout = setTimeout(function(){
+                    $(".wrapper-controls").style.visibility = "hidden";
+                },2000);
+            })
+            jsVideo.addEventListener("mousemove", function(){
+                if (uiTimeout) clearTimeout(uiTimeout);
+                $(".wrapper-controls").style.visibility = "visible";
+                uiTimeout = setTimeout(function(){
+                    $(".wrapper-controls").style.visibility = "hidden";
+                }, 2000);
             })
 
             jsVideo.addEventListener("play", function(){
